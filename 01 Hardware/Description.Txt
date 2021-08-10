@@ -1,0 +1,9 @@
+Monitor:
+ - Temperature (DHT11)
+ - Humidity (DHT11)
+ - Light (LDR)
+
+Control:
+ - Temperature: Fan
+ - Humidity
+ - Light: motor
