@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +48,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-
+uint8_t temp, humi;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,7 +59,9 @@ static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin);
+void Set_Pin_Input(GPIO_TypeDef* port, uint16_t pin);
+uint8_t DHT11_Read(uint8_t* temp, uint8_t* humi);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,15 +102,31 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+	DWT_Init();
+	LED_CONFIG(0);
+	LED_ERROR(0);
+	LED_OK(0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		DHT11_Read(&temp, &humi);
+		LED_CONFIG(1);
+		HAL_Delay(1000);
+		LED_CONFIG(0);
+		HAL_Delay(1000);
+		LED_ERROR(1);
+		HAL_Delay(1000);
+		LED_ERROR(0);
+		HAL_Delay(1000);
+		LED_OK(1);
+		HAL_Delay(1000);
+		LED_OK(0);
+		HAL_Delay(1000);
     /* USER CODE END WHILE */
-
+		
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -378,7 +396,76 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin){
+	GPIO_InitTypeDef initStruct = {0};
+	initStruct.Pin = pin;
+	initStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	initStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(port, &initStruct);
+}
 
+void Set_Pin_Input(GPIO_TypeDef* port, uint16_t pin){
+	GPIO_InitTypeDef initStruct = {0};
+	initStruct.Pin = pin;
+	initStruct.Mode = GPIO_MODE_INPUT;
+	initStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(port, &initStruct);
+}
+
+uint8_t DHT11_Read(uint8_t* temp, uint8_t* humi){
+	uint8_t dht_data[5] = {0};
+	uint64_t startTick;
+	// Send request signal to DHT11
+	Set_Pin_Output(DHT11_GPIO_Port, DHT11_Pin);
+	HAL_GPIO_WritePin(DHT11_GPIO_Port, DHT11_Pin, GPIO_PIN_RESET);
+	HAL_Delay(18);
+	HAL_GPIO_WritePin(DHT11_GPIO_Port, DHT11_Pin, GPIO_PIN_SET);
+	delay_us(40);
+	// Set as input for receiving the data
+	Set_Pin_Input(DHT11_GPIO_Port, DHT11_Pin);
+	// The pin is low in 80us
+	startTick = get_micros();
+	while(!HAL_GPIO_ReadPin(DHT11_GPIO_Port, DHT11_Pin)){
+		if(get_micros() - startTick > 100){
+			return 255; // timeout
+		}
+	}
+	// The pin is high in 80us
+	startTick = get_micros();
+	while(HAL_GPIO_ReadPin(DHT11_GPIO_Port, DHT11_Pin)){
+		if(get_micros() - startTick > 100){
+			return 255; // timeout
+		}
+	}
+	// Read 40 bit response
+	for(uint8_t i = 0; i < 5; i++){
+		for(uint8_t j = 0; j < 8; j++){
+			// Prepare for sending the data from DHT11: the pin is low in 50us
+			startTick = get_micros();
+			while(!HAL_GPIO_ReadPin(DHT11_GPIO_Port, DHT11_Pin)){
+				if(get_micros() - startTick > 60){
+					return 255; // timeout
+				}
+			}
+			// HIGH for 26-28us = bit 0 / 70us = bit 1
+			startTick = get_micros();
+			while(HAL_GPIO_ReadPin(DHT11_GPIO_Port, DHT11_Pin)){
+				if(get_micros() - startTick > 100){
+					return 255; // timeout
+				}
+			}
+			if(get_micros() - startTick > 40){
+				dht_data[i] |= (uint8_t) 1 << (7 - j);
+			}
+		}
+	}
+	if(dht_data[0] + dht_data[1] + dht_data[2] + dht_data[3] != dht_data[4]){
+		return 0; // checksum error
+	}
+	*temp = dht_data[2];
+	*humi = dht_data[0];
+	return 1;
+}
 /* USER CODE END 4 */
 
 /**

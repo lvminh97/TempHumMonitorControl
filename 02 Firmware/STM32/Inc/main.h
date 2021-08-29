@@ -81,7 +81,9 @@ void Error_Handler(void);
 #define DHT11_Pin GPIO_PIN_6
 #define DHT11_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
+#define LED_ERROR(status) HAL_GPIO_WritePin(LED_ERROR_GPIO_Port, LED_ERROR_Pin, !status)
+#define LED_OK(status) HAL_GPIO_WritePin(LED_OK_GPIO_Port, LED_OK_Pin, !status);
+#define LED_CONFIG(status) HAL_GPIO_WritePin(LED_CONFIG_GPIO_Port, LED_CONFIG_Pin, !status);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
