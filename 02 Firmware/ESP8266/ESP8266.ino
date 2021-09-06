@@ -154,9 +154,10 @@ void process(char *buff){
 String sendRequest(char *buff){
   esp.connect(HOSTNAME, PORT);
   if(esp.connected()){
-    char tmp[35];
-    sprintf(tmp, "?temp=%d&humi=%d&lux=%d", temp, humi, lux);
-    esp.print(String("GET /vuducthang/main.php") 
+    char tmp[35] = "";
+    if(temp > 0 && humi > 0 && lux > 0)
+      sprintf(tmp, "?temp=%d&humi=%d&lux=%d", temp, humi, lux);
+    esp.print(String("GET /giamsatkhongkhi/main.php") 
       + String(tmp) 
       + String(" HTTP/1.0\r\nHost: ") 
       + String(HOSTNAME) + String("\r\n\r\n"));
@@ -172,5 +173,6 @@ String sendRequest(char *buff){
     }
   }
   esp.stop(); 
+  Serial.println(resp);
   return resp;
 }
