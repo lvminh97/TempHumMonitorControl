@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "string.h"
 #include "utils.h"
 /* USER CODE END Includes */
 
@@ -49,10 +50,14 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+uint32_t adc_buff[1];
+uint8_t rx_data[2], rx_buf[100];
+uint16_t rx_buf_id;
+
 uint8_t temp, humi;
 uint16_t lux;
 
-uint32_t adc_buff[1];
+uint8_t fan_sts, mist_sts, servo_sts;
 
 uint32_t getdata_timer;
 /* USER CODE END PV */
@@ -72,6 +77,8 @@ void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin);
 void Set_Pin_Input(GPIO_TypeDef* port, uint16_t pin);
 uint8_t DHT11_Read(uint8_t* temp, uint8_t* humi);
 uint16_t Get_Lux();
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef*);
+void SendCmd(char *cmd, int timeout);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -332,7 +339,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -409,12 +416,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void Init(){
+	ESP_RST(0);
 	DWT_Init();
 	HAL_ADC_Start_DMA(&hadc1, adc_buff, 1);
 	LED_CONFIG(0);
 	LED_ERROR(0);
 	LED_OK(0);
 	getdata_timer = get_millis();
+//	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);  // set UART interrupt
 }
 
 void MainLoopService(){
@@ -425,6 +434,9 @@ void MainLoopService(){
 	}
 	if(0 == ESP_CONFIG){
 		// send CONFIG command to ESP8266 to go to Config mode
+		ESP_RST(1);
+		HAL_Delay(8);
+		ESP_RST(0);
 	}
 	
 }
@@ -506,6 +518,25 @@ uint16_t Get_Lux(){
 	return 500 / res;
 }
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart){
+	if(huart->Instance == USART1){
+		rx_buf[rx_buf_id++] = rx_data[0];
+		rx_buf[rx_buf_id] = 0;
+		if(rx_data[0] == '\r' || rx_data[0] == '\n'){
+			if(indexOf((char*) rx_buf, "stt:") != -1) {
+				int pos = indexOf((char*) rx_buf, "stt:");
+			}
+			rx_buf[0] = 0;
+			rx_buf_id = 0;
+		}
+		HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);
+	}
+}
+
+void SendCmd(char* cmd, int timeout){
+	HAL_UART_Transmit(&huart1, (uint8_t*) cmd, strlen(cmd), timeout);
+	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);
+}
 /* USER CODE END 4 */
 
 /**

@@ -31,4 +31,19 @@ uint32_t get_millis(void){
 	return DWT->CYCCNT / (SystemCoreClock / 1000);
 }
 
+int indexOf(char* s, char* t){
+	for(int i = 0; s[i]; i++){
+		if(s[i] == t[0]){
+			uint8_t flag = 1;
+			for(int j = 1; j < t[j]; j++){
+				if(s[i + j] != t[j]){
+					flag = 0;
+					break;
+				}
+			}
+			if(flag) return i;
+		}
+	}
+	return -1;
+}
 #endif
