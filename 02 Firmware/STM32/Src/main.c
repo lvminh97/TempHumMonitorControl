@@ -45,7 +45,6 @@ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 
@@ -56,13 +55,18 @@ uint16_t rx_buf_id;
 
 uint8_t temp, humi;
 uint16_t lux;
+uint16_t sum_temp, sum_humi, sum_lux, count;
 
 // flag
 uint8_t fan_sts, mist_sts, servo_sts;
 uint8_t hasControl;
-uint8_t configMode;
+uint8_t data_ready;
+uint8_t configMode, nextConfigMode;
+uint8_t wifiConnected;
 
-uint32_t getdata_timer;
+uint32_t svc_0_5sec;
+uint32_t svc_1sec;
+uint32_t svc_5sec;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,7 +74,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
@@ -119,7 +122,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
@@ -278,55 +280,6 @@ static void MX_TIM2_Init(void)
 }
 
 /**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
-
-}
-
-/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -390,13 +343,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, MOTOR_Pin|LED_OK_Pin|MIST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_OK_Pin|FAN_Pin|MIST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LED_ERROR_Pin|LED_CONFIG_Pin|E_RST_Pin|DHT11_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : MOTOR_Pin LED_OK_Pin MIST_Pin */
-  GPIO_InitStruct.Pin = MOTOR_Pin|LED_OK_Pin|MIST_Pin;
+  /*Configure GPIO pins : LED_OK_Pin FAN_Pin MIST_Pin */
+  GPIO_InitStruct.Pin = LED_OK_Pin|FAN_Pin|MIST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -419,23 +372,59 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void Init(){
-	ESP_RST(0);
 	DWT_Init();
 	HAL_ADC_Start_DMA(&hadc1, adc_buff, 1);
 	LED_CONFIG(0);
-	LED_ERROR(0);
+	LED_ERROR(1);
 	LED_OK(0);
+	// Reset ESP8266
+	ESP_RST(1);
+	delay_ms(4);
+	ESP_RST(0);
+	// Init flag value
+	data_ready = 0;
 	hasControl = 0;
-	configMode = 0;
-	getdata_timer = get_millis();
-//	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);  // set UART interrupt
+	configMode = 0; 
+	nextConfigMode = 0;
+	wifiConnected = 0;
+	sum_temp = sum_humi = sum_lux = count = 0;
+	svc_0_5sec = svc_1sec = svc_5sec = get_millis();
+	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);  // set UART interrupt
 }
 
 void MainLoopService(){
-	if(get_millis() - getdata_timer >= 1000){
+	if(get_millis() - svc_0_5sec >= 500){
+		// Get sensor data
 		DHT11_Read(&temp, &humi);
 		lux = Get_Lux();
-		getdata_timer = get_millis();
+		sum_temp += temp;
+		sum_humi += humi;
+		sum_lux += lux;
+		count++;
+		// Check wifi status
+		if(0 == wifiConnected){
+			SendCmd("{\"cmd\":\"GETWIFISTATUS\"}", 1000);
+		}
+		svc_0_5sec = get_millis();
+	}
+	if(get_millis() - svc_1sec >= 1000){
+		char tmp[40];
+		if(1 == data_ready && sum_temp / count > 0 && sum_humi / count > 0){
+			sprintf(tmp, "{\"cmd\":\"SEND\",\"data\":[%d,%d,%d]}", sum_temp / count, sum_humi / count, sum_lux / count);
+			data_ready = 0;
+			sum_temp = sum_humi = sum_lux = count = 0;
+		}
+		else 
+			strcpy(tmp, "{\"cmd\":\"SEND\"}");
+		
+		if(0 == configMode && 1 == wifiConnected)
+			SendCmd(tmp, 1000);
+		
+		svc_1sec = get_millis();
+	}
+	if(get_millis() - svc_5sec >= 5000){
+		data_ready = 1;
+		svc_5sec = get_millis();
 	}
 	if(0 == ESP_CONFIG){
 		// send CONFIG command to ESP8266 to go to Config mode
@@ -445,13 +434,27 @@ void MainLoopService(){
 	if(1 == hasControl){
 		// control fan, mist, servo
 		FAN(fan_sts);
-		
 		hasControl = 0;
 	}
-	if(1 == configMode)
-		LED_CONFIG(1);
-	else
-		LED_CONFIG(0);
+	if(configMode != nextConfigMode){
+		configMode = nextConfigMode;
+		if(1 == configMode){
+			LED_ERROR(0);
+			LED_CONFIG(1);
+			LED_OK(0);
+		}
+		else{
+			LED_CONFIG(0);
+			if(1 == wifiConnected)
+				LED_OK(1);
+			else
+				LED_ERROR(1);
+			// Reset ESP8266 after finished the config
+			ESP_RST(1);
+			delay_ms(4);
+			ESP_RST(0);
+		}
+	}
 }
 
 void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin){
@@ -535,30 +538,37 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart){
 	if(huart->Instance == USART1){
 		rx_buf[rx_buf_id++] = rx_data[0];
 		rx_buf[rx_buf_id] = 0;
-		if(rx_data[0] == '\r' || rx_data[0] == '\n'){
+		if(rx_buf_id > 0 && (rx_data[0] == '\r' || rx_data[0] == '\n')){
 			if(indexOf((char*) rx_buf, "control:") != -1) {
 				// check fan sts
-				if(indexOf((char*) rx_buf, "fan:1") != -1)
+				if(indexOf((char*) rx_buf, "\"fan\":\"1\"") != -1)
 					fan_sts = 1;
-				else if(indexOf((char*) rx_buf, "fan:0") != -1)
+				else if(indexOf((char*) rx_buf, "\"fan\":\"0\"") != -1)
 					fan_sts = 0;
 				// check mist sts
-				if(indexOf((char*) rx_buf, "mist:1") != -1)
+				if(indexOf((char*) rx_buf, "\"mist\":\"1\"") != -1)
 					mist_sts = 1;
-				else if(indexOf((char*) rx_buf, "mist:0") != -1)
+				else if(indexOf((char*) rx_buf, "\"mist\":\"0\"") != -1)
 					mist_sts = 0;
 				// check servo sts
-				if(indexOf((char*) rx_buf, "servo:1") != -1)
+				if(indexOf((char*) rx_buf, "\"servo\":\"1\"") != -1)
 					servo_sts = 1;
-				else if(indexOf((char*) rx_buf, "servo:0") != -1)
+				else if(indexOf((char*) rx_buf, "\"servo\":\"0\"") != -1)
 					servo_sts = 0;
 				//
 				hasControl = 1;
 			}
-			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1)
-				configMode = 1;
-			else if(indexOf((char*) rx_buf, "message:END_CONFIG_MODE") != -1)
-				configMode = 0;
+			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1){
+				nextConfigMode = 1;
+			}
+			else if(indexOf((char*) rx_buf, "message:END_CONFIG_MODE") != -1){
+				nextConfigMode = 0;
+			}
+			else if(indexOf((char*) rx_buf, "message:WIFI_CONNECTED") != -1){
+				wifiConnected = 1;
+				LED_ERROR(0);
+				LED_OK(1);
+			}
 			//
 			rx_buf[0] = 0;
 			rx_buf_id = 0;

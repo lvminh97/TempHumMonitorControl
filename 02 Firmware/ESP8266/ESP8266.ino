@@ -33,6 +33,7 @@ void setup() {
   server.on("/save_config", save_config);
   EEPROM.begin(100);
   initParam();
+  delay(5000);
 }
 
 void loop() {
@@ -53,7 +54,7 @@ void loop() {
     changePort = false;
   }
   if(hasNewData == true){
-    sendRequest(NULL);
+    Serial.println(sendRequest());
     hasNewData = false;
   }
 }
@@ -102,7 +103,7 @@ void save_config(){
   // End config mode
   delay(1000);
   isConfigMode = false;
-  Serial.println("{message:END_CONFIG_MODE}\r\n");
+  Serial.println("{message:END_CONFIG_MODE}");
 }
 
 void initParam(){
@@ -127,7 +128,7 @@ void process(char *buff){
     }
     else{
       if(strcmp(cmd, "CONFIG") == 0){
-        Serial.println("{message:IN_CONFIG_MODE}\r\n");
+        Serial.println("{message:IN_CONFIG_MODE}");
         isConfigMode = true;
         server.begin();
         while(isConfigMode == true){
@@ -147,11 +148,17 @@ void process(char *buff){
         Serial.print(" Port: ");
         Serial.println(PORT);
       }
+      else if(strcmp(cmd, "GETWIFISTATUS") == 0){
+        if(WiFi.status() == WL_CONNECTED)
+          Serial.println("{message:WIFI_CONNECTED}");
+        else
+          Serial.println("{message:WIFI_NOT_CONNECTED}");
+      }
     }
   }
 }
 
-String sendRequest(char *buff){
+String sendRequest(){
   esp.connect(HOSTNAME, PORT);
   if(esp.connected()){
     char tmp[35] = "";
@@ -172,7 +179,7 @@ String sendRequest(char *buff){
       break;
     }
   }
-  esp.stop(); 
-  Serial.println(resp);
+  esp.stop();
+  resp = "control:" + resp.substring(resp.indexOf("{\"fan\""));
   return resp;
 }
