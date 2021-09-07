@@ -33,7 +33,6 @@ void setup() {
   server.on("/save_config", save_config);
   EEPROM.begin(100);
   initParam();
-  delay(5000);
 }
 
 void loop() {
