@@ -51,13 +51,16 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 uint32_t adc_buff[1];
-uint8_t rx_data[2], rx_buf[100];
+uint8_t rx_data[2], rx_buf[150];
 uint16_t rx_buf_id;
 
 uint8_t temp, humi;
 uint16_t lux;
 
+// flag
 uint8_t fan_sts, mist_sts, servo_sts;
+uint8_t hasControl;
+uint8_t configMode;
 
 uint32_t getdata_timer;
 /* USER CODE END PV */
@@ -422,23 +425,30 @@ void Init(){
 	LED_CONFIG(0);
 	LED_ERROR(0);
 	LED_OK(0);
+	hasControl = 0;
+	configMode = 0;
 	getdata_timer = get_millis();
 //	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);  // set UART interrupt
 }
 
 void MainLoopService(){
-	if(get_millis() - getdata_timer >= 2000){
+	if(get_millis() - getdata_timer >= 1000){
 		DHT11_Read(&temp, &humi);
 		lux = Get_Lux();
 		getdata_timer = get_millis();
 	}
 	if(0 == ESP_CONFIG){
 		// send CONFIG command to ESP8266 to go to Config mode
-		ESP_RST(1);
-		HAL_Delay(8);
-		ESP_RST(0);
+		SendCmd("{\"cmd\":\"CONFIG\"}", 1000);
+		delay_ms(150);
 	}
-	
+	if(1 == hasControl){
+		// control fan, mist, servo
+		hasControl = 0;
+	}
+	if(1 == configMode){
+		// turn on Config LED
+	}
 }
 
 void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin){
@@ -523,8 +533,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart){
 		rx_buf[rx_buf_id++] = rx_data[0];
 		rx_buf[rx_buf_id] = 0;
 		if(rx_data[0] == '\r' || rx_data[0] == '\n'){
-			if(indexOf((char*) rx_buf, "stt:") != -1) {
-				int pos = indexOf((char*) rx_buf, "stt:");
+			if(indexOf((char*) rx_buf, "control:") != -1) {
+				// check fan sts
+				if(indexOf((char*) rx_buf, "fan:1") != -1)
+					fan_sts = 1;
+				else if(indexOf((char*) rx_buf, "fan:0") != -1)
+					fan_sts = 0;
+				// check mist sts
+				if(indexOf((char*) rx_buf, "mist:1") != -1)
+					mist_sts = 1;
+				else if(indexOf((char*) rx_buf, "mist:0") != -1)
+					mist_sts = 0;
+				// check servo sts
+				if(indexOf((char*) rx_buf, "servo:1") != -1)
+					servo_sts = 1;
+				else if(indexOf((char*) rx_buf, "servo:0") != -1)
+					servo_sts = 0;
+				//
+				hasControl = 1;
+			}
+			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1){
+				configMode = 1;
 			}
 			rx_buf[0] = 0;
 			rx_buf_id = 0;
