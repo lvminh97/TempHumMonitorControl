@@ -87,6 +87,8 @@ void Error_Handler(void);
 
 #define ESP_RST(status) HAL_GPIO_WritePin(E_RST_GPIO_Port, E_RST_Pin, !status)
 #define ESP_CONFIG HAL_GPIO_ReadPin(CONFIG_GPIO_Port, CONFIG_Pin)
+
+#define FAN(status) HAL_GPIO_WritePin(FAN_GPIO_Port, FAN_Pin, status)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

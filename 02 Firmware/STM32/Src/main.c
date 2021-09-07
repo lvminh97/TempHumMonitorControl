@@ -444,11 +444,14 @@ void MainLoopService(){
 	}
 	if(1 == hasControl){
 		// control fan, mist, servo
+		FAN(fan_sts);
+		
 		hasControl = 0;
 	}
-	if(1 == configMode){
-		// turn on Config LED
-	}
+	if(1 == configMode)
+		LED_CONFIG(1);
+	else
+		LED_CONFIG(0);
 }
 
 void Set_Pin_Output(GPIO_TypeDef* port, uint16_t pin){
@@ -552,9 +555,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart){
 				//
 				hasControl = 1;
 			}
-			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1){
+			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1)
 				configMode = 1;
-			}
+			else if(indexOf((char*) rx_buf, "message:END_CONFIG_MODE") != -1)
+				configMode = 0;
+			//
 			rx_buf[0] = 0;
 			rx_buf_id = 0;
 		}
