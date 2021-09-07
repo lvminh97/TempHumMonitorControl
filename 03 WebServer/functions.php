@@ -55,6 +55,12 @@ function insertData($temp, $humi, $lux){
     $db->insert("data", array('time' => $time, 'temp' => $temp, 'humi' => $humi, 'lux' => $lux));
 }
 
+function getLatestData(){
+    $db = new DB;
+    $data = $db->select("data", "*", "1", "time DESC LIMIT 1");
+    return $data[0];
+}
+
 function timeCompare($t1, $t2){
     $t1 = explode(":", $t1);
     $t2 = explode(":", $t2);
