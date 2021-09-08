@@ -10,7 +10,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/tv_temp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="70dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="30dp"
         android:layout_width="100dp"
@@ -21,7 +21,7 @@
         android:id="@+id/tv_temp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="70dp"
         android:layout_marginRight="40dp"
         android:layout_width="200dp"
         android:layout_height="100dp"
@@ -79,5 +79,19 @@
         android:gravity="center_vertical"
         android:text="00 lux"
         android:textSize="50sp"/>
+    <TextView
+        android:id="@+id/tv_timeupdated"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_lux"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:textAlignment="viewEnd"
+        android:gravity="center_vertical"
+        android:text="Cập nhật: 2021-09-08 11:58:00"
+        android:textSize="14sp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

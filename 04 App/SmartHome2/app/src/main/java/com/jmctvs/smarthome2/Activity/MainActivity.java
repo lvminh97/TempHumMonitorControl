@@ -1,13 +1,21 @@
 package com.jmctvs.smarthome2.Activity;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -22,6 +30,10 @@ import com.jmctvs.smarthome2.Fragment.MonitorFragment;
 import com.jmctvs.smarthome2.Fragment.ControlFragment;
 import com.jmctvs.smarthome2.Fragment.SettingFragment;
 import com.jmctvs.smarthome2.R;
+import com.jmctvs.smarthome2.Utils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -50,11 +62,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         View hView = navigationView.getHeaderView(0);
         TextView fullnameTv = hView.findViewById(R.id.tv_nav_fullname);
-        fullnameTv.setText("User");
+        fullnameTv.setText("Vũ Đức Thắng");
         TextView emailTv = hView.findViewById(R.id.tv_nav_email);
         emailTv.setText("");
 
         getSupportActionBar().setTitle("");
+
+        SharedPreferences pref = getSharedPreferences("SEC_AUTH", MODE_PRIVATE);
+        Utils.server = pref.getString("server", "");
+        Utils.port = pref.getInt("port", 0);
     }
 
     @Override

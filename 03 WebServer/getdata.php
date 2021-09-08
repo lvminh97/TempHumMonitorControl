@@ -1,5 +1,8 @@
 <?php
 require_once "functions.php";
-
-echo json_encode(getLatestData());
+$res = getLatestData();
+$res['fan'] = getParam("fan");
+$res['mist'] = getParam("mist");
+$res['servo'] = getParam("servo");
+echo json_encode($res);
 ?>
