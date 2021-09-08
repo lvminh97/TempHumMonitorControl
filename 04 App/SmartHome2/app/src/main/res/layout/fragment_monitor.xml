@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/img_temp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/tv_temp"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/temp"
+        />
+    <TextView
+        android:id="@+id/tv_temp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginRight="40dp"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:paddingStart="20dp"
+        android:gravity="center_vertical"
+        android:text="00 oC"
+        android:textSize="50sp"/>
+
+    <ImageView
+        android:id="@+id/img_humi"
+        app:layout_constraintTop_toBottomOf="@+id/img_temp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/tv_humi"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/humi"
+        />
+    <TextView
+        android:id="@+id/tv_humi"
+        app:layout_constraintTop_toBottomOf="@+id/tv_temp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="40dp"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:paddingStart="20dp"
+        android:gravity="center_vertical"
+        android:text="00 %"
+        android:textSize="50sp"/>
+
+    <ImageView
+        android:id="@+id/img_lux"
+        app:layout_constraintTop_toBottomOf="@+id/img_humi"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/tv_humi"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/sun"
+        />
+    <TextView
+        android:id="@+id/tv_lux"
+        app:layout_constraintTop_toBottomOf="@+id/tv_humi"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="40dp"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:paddingStart="20dp"
+        android:gravity="center_vertical"
+        android:text="00 lux"
+        android:textSize="50sp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

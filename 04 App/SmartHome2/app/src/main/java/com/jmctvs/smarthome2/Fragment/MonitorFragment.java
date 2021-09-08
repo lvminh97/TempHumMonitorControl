@@ -5,14 +5,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.jmctvs.thibanglaixe.R;
+import com.jmctvs.smarthome2.R;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-public class HomeFragment extends Fragment {
+public class MonitorFragment extends Fragment {
+
+    private View view;
+
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        view = inflater.inflate(R.layout.fragment_monitor, container, false);
         return view;
     }
 }

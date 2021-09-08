@@ -5,28 +5,16 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_baseline_home_24"
-            android:title="Home" />
+            android:id="@+id/nav_monitor"
+            android:icon="@drawable/ic_baseline_desktop_windows_24"
+            android:title="Giám sát" />
         <item
-            android:id="@+id/nav_ontap"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Ôn tập" />
+            android:id="@+id/nav_control"
+            android:icon="@drawable/ic_baseline_touch_app_24"
+            android:title="Điều khiển" />
         <item
-            android:id="@+id/nav_thithu"
-            android:icon="@drawable/ic_baseline_rate_review_24"
-            android:title="Thi thử" />
-        <item
-            android:id="@+id/nav_nhandienbienbao"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Nhận diện biển báo" />
-        <item
-            android:id="@+id/nav_quanlytaikhoan"
-            android:icon="@drawable/ic_baseline_account_box_24"
-            android:title="Quản lý tài khoản" />
-        <item
-            android:id="@+id/nav_dangxuat"
-            android:icon="@drawable/ic_baseline_exit_to_app_24"
-            android:title="Đăng xuất" />
+            android:id="@+id/nav_setting"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:title="Cài đặt" />
     </group>
 </menu>

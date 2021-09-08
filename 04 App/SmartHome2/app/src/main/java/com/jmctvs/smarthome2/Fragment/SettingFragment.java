@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-public class ThiThuPackSelectFragment extends Fragment implements View.OnClickListener{
+public class SettingFragment extends Fragment implements View.OnClickListener{
 
     private View view;
     private Button a1Btn, a2Btn, b1Btn;

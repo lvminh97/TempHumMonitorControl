@@ -1,10 +1,8 @@
 package com.jmctvs.smarthome2.Activity;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
@@ -20,17 +18,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.jmctvs.smarthome2.Fragment.NhanDienBienBaoFragment;
-import com.jmctvs.smarthome2.Fragment.HomeFragment;
-import com.jmctvs.smarthome2.Fragment.LichSuBienBaoFragment;
-import com.jmctvs.smarthome2.Fragment.LichSuThiFragment;
-import com.jmctvs.smarthome2.Fragment.OnTapPackSelectFragment;
-import com.jmctvs.smarthome2.Fragment.OnTapQuesSelectFragment;
-import com.jmctvs.smarthome2.Fragment.QuanLyTaiKhoanFragment;
-import com.jmctvs.smarthome2.Fragment.ThiThuPackSelectFragment;
-import com.jmctvs.smarthome2.Fragment.ThiThuQuesSelectFragment;
+import com.jmctvs.smarthome2.Fragment.MonitorFragment;
+import com.jmctvs.smarthome2.Fragment.ControlFragment;
+import com.jmctvs.smarthome2.Fragment.SettingFragment;
 import com.jmctvs.smarthome2.R;
-import com.jmctvs.smarthome2.Utilities.Utilities;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -55,14 +46,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-        loadHome();
+        loadMonitor();
 
         View hView = navigationView.getHeaderView(0);
         TextView fullnameTv = hView.findViewById(R.id.tv_nav_fullname);
-        fullnameTv.setText(Utilities.getAccountObj().getFullname());
-        Log.d("SVMC2", Utilities.getAccountObj().getFullname());
+        fullnameTv.setText("User");
         TextView emailTv = hView.findViewById(R.id.tv_nav_email);
-        emailTv.setText(Utilities.getAccountObj().getEmail());
+        emailTv.setText("");
 
         getSupportActionBar().setTitle("");
     }
@@ -85,119 +75,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         FragmentTransaction transaction;
         switch (item.getItemId()){
-            case R.id.nav_home:
-                loadHome();
+            case R.id.nav_monitor:
+                loadMonitor();
                 break;
-            case R.id.nav_ontap:
-                loadOnTapPackSelect();
+            case R.id.nav_control:
+                loadControl();
                 break;
-            case R.id.nav_thithu:
-                loadThiThuPackSelect();
+            case R.id.nav_setting:
+                loadSetting();
                 break;
-            case R.id.nav_nhandienbienbao:
-                loadNhanDienBienBao();
-                break;
-            case R.id.nav_quanlytaikhoan:
-                loadQuanLyTaiKhoan();
-                break;
-            case R.id.nav_dangxuat:
-                Utilities.setAccountObj(null);
-                Intent intent = new Intent(getApplication(), LoginActivity.class);
-                startActivity(intent);
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private void loadHome(){
-        Utilities.setCurrentScreen("HomeScreen");
-        Fragment fragment = new HomeFragment();
+    private void loadMonitor(){
+        Fragment fragment = new MonitorFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.nav_host_framelayout, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    private void loadOnTapPackSelect(){
-        Utilities.setCurrentScreen("OnTapPackSelect");
-        Fragment fragment = new OnTapPackSelectFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.nav_host_framelayout, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-    private void loadThiThuPackSelect(){
-        Utilities.setCurrentScreen("ThiThuPackSelect");
-        Fragment fragment = new ThiThuPackSelectFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.nav_host_framelayout, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-    private void loadNhanDienBienBao() {
-        Utilities.setCurrentScreen("NhanDienBienBao");
-        Fragment fragment = new NhanDienBienBaoFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.nav_host_framelayout, fragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-    private void loadQuanLyTaiKhoan(){
-        Utilities.setCurrentScreen("QuanLyTaiKhoan");
-        Fragment fragment = new QuanLyTaiKhoanFragment();
+    private void loadControl(){
+        Fragment fragment = new ControlFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.nav_host_framelayout, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
-    @Override
-    public void onBackPressed(){
-        String currentScreen = Utilities.getCurrentScreen();
-        if(currentScreen.equals("HomeScreen")){
-            return;
-        }
-        Fragment fragment = null;
-        if(currentScreen.equals("OnTapPackSelect")
-                || currentScreen.equals("ThiThuPackSelect")
-                || currentScreen.equals("NhanDienBienBao")
-                || currentScreen.equals("QuanLyTaiKhoan")) {
-            Utilities.setCurrentScreen("HomeScreen");
-            fragment = new HomeFragment();
-        }
-        else if(currentScreen.equals("OnTapQuesSelect")){
-            Utilities.setCurrentScreen("OnTapPackSelect");
-            fragment = new OnTapPackSelectFragment();
-        }
-        else if(currentScreen.equals("OnTapQues") || currentScreen.equals("OnTapResult")){
-            Utilities.setCurrentScreen("OnTapQuesSelect");
-            fragment = new OnTapQuesSelectFragment();
-        }
-        else if(currentScreen.equals("ThiThuQuesSelect")){
-            Utilities.setCurrentScreen("ThiThuPackSelect");
-            fragment = new ThiThuPackSelectFragment();
-        }
-        else if(currentScreen.equals("ThiThuQues") || currentScreen.equals("ThiThuResult")){
-            Utilities.setCurrentScreen("ThiThuQuesSelect");
-            fragment = new ThiThuQuesSelectFragment();
-        }
-        else if(currentScreen.equals("ThongTinCaNhan") || currentScreen.equals("LichSuThi") || currentScreen.equals("DoiMatKhau") || currentScreen.equals("LichSuBienBao")){
-            Utilities.setCurrentScreen("QuanLyTaiKhoan");
-            fragment = new QuanLyTaiKhoanFragment();
-        }
-        else if(currentScreen.equals("ChiTietLichSuThi")){
-            Utilities.setCurrentScreen("LichSuThi");
-            fragment = new LichSuThiFragment();
-        }
-        else if(currentScreen.equals("ChiTietLichSuBienBao")){
-            Utilities.setCurrentScreen("LichSuBienBao");
-            fragment = new LichSuBienBaoFragment();
-        }
-        if(fragment != null) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_framelayout, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-        }
+    private void loadSetting(){
+        Fragment fragment = new SettingFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.nav_host_framelayout, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }
