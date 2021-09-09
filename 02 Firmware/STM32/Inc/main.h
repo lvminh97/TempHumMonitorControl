@@ -89,6 +89,8 @@ void Error_Handler(void);
 #define ESP_CONFIG HAL_GPIO_ReadPin(CONFIG_GPIO_Port, CONFIG_Pin)
 
 #define FAN(status) HAL_GPIO_WritePin(FAN_GPIO_Port, FAN_Pin, status)
+#define MIST(status) HAL_GPIO_WritePin(MIST_GPIO_Port, MIST_Pin, status)
+#define SERVO(htim, status) htim.Instance->CCR2 = (status ? 125 : 25) 
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
