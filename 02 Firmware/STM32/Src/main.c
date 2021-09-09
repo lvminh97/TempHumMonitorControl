@@ -59,6 +59,7 @@ uint16_t sum_temp, sum_humi, sum_lux, count;
 
 // flag
 uint8_t fan_sts, mist_sts, servo_sts;
+uint8_t mist_pulse;
 uint8_t hasControl;
 uint8_t data_ready;
 uint8_t configMode, nextConfigMode;
@@ -67,6 +68,7 @@ uint8_t wifiConnected;
 uint32_t svc_0_5sec;
 uint32_t svc_1sec;
 uint32_t svc_5sec;
+uint32_t svc_100us;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -249,9 +251,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 1440 - 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
+  htim2.Init.Period = 1000 - 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -389,7 +391,9 @@ void Init(){
 	wifiConnected = 0;
 	sum_temp = sum_humi = sum_lux = count = 0;
 	svc_0_5sec = svc_1sec = svc_5sec = get_millis();
+	svc_100us = get_micros();
 	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_data, 1);  // set UART interrupt
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 }
 
 void MainLoopService(){
@@ -400,6 +404,9 @@ void MainLoopService(){
 		sum_temp += temp;
 		sum_humi += humi;
 		sum_lux += lux;
+		temp = 0;
+		humi = 0;
+		lux = 0;
 		count++;
 		// Check wifi status
 		if(0 == wifiConnected){
@@ -434,7 +441,13 @@ void MainLoopService(){
 	if(1 == hasControl){
 		// control fan, mist, servo
 		FAN(fan_sts);
+		SERVO(htim2, servo_sts);
 		hasControl = 0;
+	}
+	if(1 == mist_sts && get_micros() - svc_100us >= 50){
+		mist_pulse = !mist_pulse;
+		MIST(mist_pulse);
+		svc_100us = get_micros();
 	}
 	if(configMode != nextConfigMode){
 		configMode = nextConfigMode;
