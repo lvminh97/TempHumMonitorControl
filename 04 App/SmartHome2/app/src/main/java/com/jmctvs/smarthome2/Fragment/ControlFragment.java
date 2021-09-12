@@ -37,11 +37,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener{
 
     private void initUI(){
         fanBtn = view.findViewById(R.id.btn_fan);
-        mistBtn = view.findViewById(R.id.btn_mist);
+//        mistBtn = view.findViewById(R.id.btn_mist);
         servoBtn = view.findViewById(R.id.btn_servo);
 
         fanBtn.setOnClickListener(this);
-        mistBtn.setOnClickListener(this);
+//        mistBtn.setOnClickListener(this);
         servoBtn.setOnClickListener(this);
     }
 
@@ -51,9 +51,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener{
             case R.id.btn_fan:
                 setControl("fan", Utils.fanStt == 1 ? "0" : "1");
                 break;
-            case R.id.btn_mist:
-                setControl("mist", Utils.mistStt == 1 ? "0" : "1");
-                break;
+//            case R.id.btn_mist:
+//                setControl("mist", Utils.mistStt == 1 ? "0" : "1");
+//                break;
             case R.id.btn_servo:
                 setControl("servo", Utils.servoStt == 1 ? "0" : "1");
                 break;
@@ -80,17 +80,17 @@ public class ControlFragment extends Fragment implements View.OnClickListener{
                                     fanBtn.setText("Tắt");
                                 }
                             }
-                            if(!json.isNull("mist")){
-                                Utils.mistStt = Integer.parseInt(json.getString("mist"));
-                                if(Integer.parseInt(json.getString("mist")) == 1){
-                                    mistBtn.setBackgroundColor(0xFF2FB36D);
-                                    mistBtn.setText("Bật");
-                                }
-                                else{
-                                    mistBtn.setBackgroundColor(0xFFFA0F07);
-                                    mistBtn.setText("Tắt");
-                                }
-                            }
+//                            if(!json.isNull("mist")){
+//                                Utils.mistStt = Integer.parseInt(json.getString("mist"));
+//                                if(Integer.parseInt(json.getString("mist")) == 1){
+//                                    mistBtn.setBackgroundColor(0xFF2FB36D);
+//                                    mistBtn.setText("Bật");
+//                                }
+//                                else{
+//                                    mistBtn.setBackgroundColor(0xFFFA0F07);
+//                                    mistBtn.setText("Tắt");
+//                                }
+//                            }
                             if(!json.isNull("servo")){
                                 Utils.servoStt = Integer.parseInt(json.getString("servo"));
                                 if(Integer.parseInt(json.getString("servo")) == 1){
@@ -139,14 +139,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener{
                                 fanBtn.setText("Tắt");
                             }
 
-                            if(Utils.mistStt == 1) {
-                                mistBtn.setBackgroundColor(0xFF2FB36D);
-                                mistBtn.setText("Bật");
-                            }
-                            else{
-                                mistBtn.setBackgroundColor(0xFFFA0F07);
-                                mistBtn.setText("Tắt");
-                            }
+//                            if(Utils.mistStt == 1) {
+//                                mistBtn.setBackgroundColor(0xFF2FB36D);
+//                                mistBtn.setText("Bật");
+//                            }
+//                            else{
+//                                mistBtn.setBackgroundColor(0xFFFA0F07);
+//                                mistBtn.setText("Tắt");
+//                            }
 
                             if(Utils.servoStt == 1) {
                                 servoBtn.setBackgroundColor(0xFF2FB36D);

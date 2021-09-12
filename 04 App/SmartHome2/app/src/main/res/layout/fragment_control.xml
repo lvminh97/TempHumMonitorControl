@@ -7,8 +7,20 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/tv_fan"
+        android:id="@+id/tv_control"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:textSize="45sp"
+        android:textStyle="bold"
+        android:textColor="#ff0000"
+        android:text="ĐIỀU KHIỂN"/>
+
+    <TextView
+        android:id="@+id/tv_fan"
+        app:layout_constraintTop_toBottomOf="@id/tv_control"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/btn_fan"
         android:layout_marginTop="80dp"
@@ -22,7 +34,7 @@
         />
     <Button
         android:id="@+id/btn_fan"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_control"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="80dp"
         android:layout_marginRight="40dp"
@@ -33,55 +45,30 @@
         android:textSize="25sp"/>
 
     <TextView
-        android:id="@+id/tv_mist"
-        app:layout_constraintTop_toBottomOf="@+id/tv_fan"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/btn_mist"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="30dp"
-        android:layout_width="180dp"
-        android:layout_height="60dp"
-        android:gravity="center_vertical"
-        android:textSize="25sp"
-        android:text="Phun sương"
-        />
-    <Button
-        android:id="@+id/btn_mist"
-        app:layout_constraintTop_toBottomOf="@+id/btn_fan"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="50dp"
-        android:layout_marginRight="40dp"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:gravity="center"
-        android:text="Bật"
-        android:textSize="25sp"/>
-
-    <TextView
         android:id="@+id/tv_servo"
-        app:layout_constraintTop_toBottomOf="@+id/tv_mist"
+        app:layout_constraintTop_toBottomOf="@id/tv_fan"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/btn_servo"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="30dp"
         android:layout_width="180dp"
         android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="30dp"
         android:gravity="center_vertical"
-        android:textSize="25sp"
         android:text="Rèm che"
+        android:textSize="25sp"
         />
+
     <Button
         android:id="@+id/btn_servo"
-        app:layout_constraintTop_toBottomOf="@+id/btn_mist"
+        app:layout_constraintTop_toBottomOf="@id/btn_fan"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="50dp"
-        android:layout_marginRight="40dp"
         android:layout_width="150dp"
         android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginRight="40dp"
         android:gravity="center"
         android:text="Bật"
-        android:textSize="25sp"/>
+        android:textSize="25sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

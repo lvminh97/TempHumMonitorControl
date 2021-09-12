@@ -49,6 +49,8 @@ public class SettingFragment extends Fragment implements View.OnClickListener{
                     SharedPreferences pref = getActivity().getSharedPreferences("SEC_AUTH", MODE_PRIVATE);
                     pref.edit().putString("server", serverEd.getText().toString()).commit();
                     pref.edit().putInt("port", Integer.parseInt(portEd.getText().toString())).commit();
+                    Utils.server = serverEd.getText().toString();
+                    Utils.port = Integer.parseInt(portEd.getText().toString());
                     Toast.makeText(getContext(), "Đã lưu cài đặt", Toast.LENGTH_SHORT).show();
                 }
                 break;
