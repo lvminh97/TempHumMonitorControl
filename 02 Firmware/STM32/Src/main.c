@@ -52,6 +52,7 @@ UART_HandleTypeDef huart1;
 uint32_t adc_buff[1];
 uint8_t rx_data[2], rx_buf[150];
 uint16_t rx_buf_id;
+char tmp[40];
 
 uint8_t temp, humi;
 uint16_t lux;
@@ -408,14 +409,14 @@ void MainLoopService(){
 		humi = 0;
 		lux = 0;
 		count++;
-		// Check wifi status
-		if(0 == wifiConnected){
-			SendCmd("{\"cmd\":\"GETWIFISTATUS\"}", 1000);
-		}
 		svc_0_5sec = get_millis();
 	}
 	if(get_millis() - svc_1sec >= 1000){
-		char tmp[40];
+		// Check wifi status
+		if(0 == wifiConnected && 0 == configMode){
+			SendCmd("{\"cmd\":\"GETWIFISTATUS\"}", 1000);
+		}
+		
 		if(1 == data_ready && sum_temp / count > 0 && sum_humi / count > 0){
 			sprintf(tmp, "{\"cmd\":\"SEND\",\"data\":[%d,%d,%d]}", sum_temp / count, sum_humi / count, sum_lux / count);
 			data_ready = 0;
@@ -572,6 +573,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart){
 				hasControl = 1;
 			}
 			else if(indexOf((char*) rx_buf, "message:IN_CONFIG_MODE") != -1){
+				wifiConnected = 0;
 				nextConfigMode = 1;
 			}
 			else if(indexOf((char*) rx_buf, "message:END_CONFIG_MODE") != -1){

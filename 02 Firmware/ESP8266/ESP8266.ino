@@ -17,6 +17,7 @@ StaticJsonDocument<100> doc;
 
 char buff[40] = "";
 int buffPos = 0;
+char tmp[40];
 
 bool isConfigMode = false;
 bool changeServerName = false;
@@ -31,27 +32,28 @@ void setup() {
   WiFi.softAP(ESPSSID, ESPPASS);
   server.on("/", get_index_page);
   server.on("/save_config", save_config);
+  server.on("/get_config", get_config);
   EEPROM.begin(100);
   initParam();
 }
 
 void loop() {
   checkDataReceive();
-  if(changeServerName == true){
-    int i;
-    for(i = 0; HOSTNAME[i] != 0; i++){
-      EEPROM.write(i, HOSTNAME[i]);
-    }
-    EEPROM.write(i, 0);
-    EEPROM.commit();
-    changeServerName = false;
-  }
-  if(changePort == true){
-    EEPROM.write(30, PORT >> 8);
-    EEPROM.write(31, PORT & 0xFF);
-    EEPROM.commit();
-    changePort = false;
-  }
+//  if(changeServerName == true){
+//    int i;
+//    for(i = 0; HOSTNAME[i] != 0; i++){
+//      EEPROM.write(i, HOSTNAME[i]);
+//    }
+//    EEPROM.write(i, 0);
+//    EEPROM.commit();
+//    changeServerName = false;
+//  }
+//  if(changePort == true){
+//    EEPROM.write(30, PORT >> 8);
+//    EEPROM.write(31, PORT & 0xFF);
+//    EEPROM.commit();
+//    changePort = false;
+//  }
   if(hasNewData == true){
     Serial.println(sendRequest());
     hasNewData = false;
@@ -85,24 +87,30 @@ void save_config(){
   }
   // Save server name
   if(server.arg("server").length() > 0){
-    changeServerName = true;
+    for(i = 0; i < server.arg("server").length(); i++){
+      EEPROM.write(i, server.arg("server")[i]);
+    }
+    EEPROM.write(i, 0);
+    EEPROM.commit();
   }
-  for(i = 0; i < server.arg("server").length(); i++){
-    HOSTNAME[i] = server.arg("server")[i];
-  }
-  HOSTNAME[i] = 0;
   // Save port
   if(server.arg("port").length() > 0){
-    changePort = true;
-  }
-  PORT = 0;
-  for(int i = 0; i < server.arg("port").length(); i++){
-    PORT = PORT * 10 + server.arg("port")[i] - '0';
+    PORT = 0;
+    for(int i = 0; i < server.arg("port").length(); i++){
+      PORT = PORT * 10 + server.arg("port")[i] - '0';
+    }
+    EEPROM.write(30, PORT >> 8);
+    EEPROM.write(31, PORT & 0xFF);
+    EEPROM.commit();
   }
   // End config mode
   delay(1000);
   isConfigMode = false;
   Serial.println("{message:END_CONFIG_MODE}");
+}
+
+void get_config(){
+  server.send(200, "text/plain", String("Server config: ") + String(HOSTNAME) + String(":") + String(PORT));
 }
 
 void initParam(){
@@ -158,27 +166,37 @@ void process(char *buff){
 }
 
 String sendRequest(){
+  String resp;
   esp.connect(HOSTNAME, PORT);
   if(esp.connected()){
-    char tmp[35] = "";
-    if(temp > 0 && humi > 0 && lux > 0)
+    if(temp > 0 && humi > 0)
       sprintf(tmp, "?temp=%d&humi=%d&lux=%d", temp, humi, lux);
-    esp.print(String("GET /giamsatkhongkhi/main.php") 
-      + String(tmp) 
-      + String(" HTTP/1.0\r\nHost: ") 
-      + String(HOSTNAME) + String("\r\n\r\n"));
-  }
-  unsigned long times = millis();
-  String resp = "";
-  while(millis() - times < 4000){
-    if(esp.available()){
-      while(esp.available()){
-        resp += (char) esp.read();
+    esp.print("GET /giamsatkhongkhi/main.php");
+    delay(1);
+    esp.print(tmp);
+    delay(1); 
+    esp.print(" HTTP/1.0\r\nHost: ");
+    delay(1); 
+    esp.print(HOSTNAME);
+    delay(1);
+    esp.print("\r\n\r\n");
+    unsigned long times = millis();
+    resp = "";
+    bool isStart = false;
+    while(millis() - times <= 4000){
+      if(esp.available()){
+        while(esp.available()){
+          char c = esp.read();
+          if(c == '{')
+            isStart = true;
+          if(isStart == true)
+            resp += c;
+        }
+        break;
       }
-      break;
     }
+    esp.stop();
+    resp = "control:" + resp;
   }
-  esp.stop();
-  resp = "control:" + resp.substring(resp.indexOf("{\"fan\""));
   return resp;
 }
